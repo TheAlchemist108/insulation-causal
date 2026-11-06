@@ -1,0 +1,3 @@
+data/raw/
+outputs/*.parquet
+__pycache__/

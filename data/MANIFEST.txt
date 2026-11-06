@@ -1,0 +1,2 @@
+5da6b2c1d6c2296f200a3ff3f8e3e05d2141fd40767e51cd5f3c57faa501b50b  data/raw/anon2026_50k.csv
+source: https://assets.publishing.service.gov.uk/media/6a282ad83b15d05a7ce31fb1/anon2026_50k.csv downloaded 2026-11-06
