@@ -50,4 +50,11 @@ This is not a formal pre-analysis plan. It fixes the headline model so the main 
 - `MAIN_HEAT_FUEL` is defined from 2022–2024 consumption.
 
 ## Deviations
-(none yet)
+All entries below were made on 6 November 2026, after the main results had been seen.
+
+1. **Event study covariates.** The spec did not say whether the event study includes the pre-period gas covariate. It does not: the event-study outcome is measured relative to year g−1, so a pre-gas covariate would partly overlap the outcome. Property, deprivation, region and cohort covariates are kept.
+2. **Forest analysis additions (exploratory).**
+   - The forest's heterogeneity variables also include pre-period mean ln(gas). IMD, council tax band, age band and floor area band are entered as ordered numbers.
+   - Added a linear projection of the forest's effect estimates for treated homes on the covariates. It is descriptive only and has no valid standard error.
+   - The held-out check is a tercile calibration: the forest is fitted on a random half of homes, the other half is ranked by predicted effect, and the DR-DiD ATT is estimated within each tercile.
+3. **Extra subgroups.** Subgroup ATTs by council tax band (bands with at least 30 treated homes) and by property age band (1930–72 and 1973–99 only, since almost no pre-1930 or post-1999 homes are treated).
