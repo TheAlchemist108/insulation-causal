@@ -6,7 +6,7 @@ from sklearn.model_selection import GroupKFold
 SEED = 20261106
 
 
-def nuisances(X, D, Y, groups, folds=5, seed=SEED):
+def nuisances(X, D, Y, groups, folds=5, seed=SEED, clip=0.01):
     X = np.asarray(X); D = np.asarray(D); Y = np.asarray(Y)
     p = np.zeros(len(D)); m0 = np.zeros(len(D))
     kf = GroupKFold(n_splits=folds, shuffle=True, random_state=seed)
@@ -18,7 +18,7 @@ def nuisances(X, D, Y, groups, folds=5, seed=SEED):
         reg = HistGradientBoostingRegressor(max_iter=300, learning_rate=0.05,
                                             early_stopping=True, random_state=seed)
         reg.fit(X[c], Y[c]); m0[te] = reg.predict(X[te])
-    return np.clip(p, 0.01, 0.99), m0
+    return np.clip(p, clip, 1 - clip), m0
 
 
 def att(D, Y, p, m0, groups, mask=None):

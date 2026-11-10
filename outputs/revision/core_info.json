@@ -1,0 +1,36 @@
+{
+ "main": {
+  "spec": "MAIN (reproduced)",
+  "att": -0.09245843137397652,
+  "se": 0.007472441572515175,
+  "lo": -0.10710441685610626,
+  "hi": -0.07781244589184678,
+  "n_treated": 1801,
+  "cohorts": "2007-2012",
+  "pct_saving": 8.831289224276972,
+  "pct_lo": 7.486207630882413,
+  "pct_hi": 10.156814333751063
+ },
+ "balance": {
+  "n_covariates": 46,
+  "max_abs_smd_raw": 0.5855372206639465,
+  "max_abs_smd_weighted": 0.2419611727876061,
+  "n_raw_over_0_1": 22,
+  "n_weighted_over_0_1": 5,
+  "share_controls_p_at_floor": 0.3804141319157919,
+  "share_treated_p_at_floor": 0.08550805108273181
+ },
+ "honest": {
+  "target": "average of event-time coefficients e=2,3 (log points)",
+  "target_est": -0.10774966783706107,
+  "target_se": 0.008185220524534319,
+  "breakdown_Mbar_relative_magnitudes": 1.25,
+  "breakdown_M_smoothness": 0.0075,
+  "pre_trend_wald": {
+   "wald": 6.5464375706298545,
+   "df": 3,
+   "p": 0.08784900171730425
+  },
+  "max_abs_pre_coef": 0.014973617894407314
+ }
+}
