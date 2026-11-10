@@ -16,7 +16,7 @@ fi = pd.read_csv(O / "forest_importance.csv", index_col=0)["importance"]
 
 
 def blp_md(df):
-    out = ["| Model | Term | Coefficient (log points) | 95% CI | p |", "| --- | --- | --- | --- | --- |"]
+    out = ["| Model | Term | Coefficient (log points; negative = larger saving) | 95% CI | p |", "| --- | --- | --- | --- | --- |"]
     for r in df.itertuples():
         out.append(f"| {r.model} | {r.term} | {r.coef:.4f} | {r.lo:.4f} to {r.hi:.4f} | {r.p:.3f} |")
     return "\n".join(out)
@@ -53,7 +53,7 @@ Target: average of e = 2, 3; estimate {pct(h['target_est']):.1f}% (base g−1, n
 
 {(T / "t2_contrasts.md").read_text()}
 
-Savings by property type (`outputs/revision/subgroups_type.csv`):
+Savings by property type (Table 5; `outputs/revision/subgroups_type.csv`):
 
 | Property type | Saving (%) | 95% CI | Treated homes |
 | --- | --- | --- | --- |
@@ -63,13 +63,13 @@ Savings by property type (`outputs/revision/subgroups_type.csv`):
 
 {(T / "t3_baseline.md").read_text()}
 
-## Best linear projection (Table 5; `outputs/revision/blp.csv`, `outputs/revision/blp_with_type.csv`)
+## Best linear projection (Table 6, shown there on the saving scale, i.e. sign flipped and \u00d7 100; `outputs/revision/blp.csv`, `outputs/revision/blp_with_type.csv`)
 
 {blp_md(blp)}
 
 {blp_md(blpt)}
 
-## GATES, CLAN and targeting test over {autoc['K']} splits (Table 6; `outputs/revision/gates.csv`, `clan.csv`, `autoc.json`)
+## GATES, CLAN and targeting test over {autoc['K']} splits (Tables 7 and 8; `outputs/revision/gates.csv`, `clan.csv`, `autoc.json`)
 
 | Group | Saving (%) | 95% CI (median rule) | Adjusted p |
 | --- | --- | --- | --- |

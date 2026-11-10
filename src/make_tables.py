@@ -137,3 +137,29 @@ t5b = pd.DataFrame({"Property type": st.group, "Saving (%)": [f1(v) for v in st.
                     "95% CI": [ci(r.pct_lo, r.pct_hi) for r in st.itertuples()], "Treated homes": [f"{int(n):,}" for n in st.n_treated]})
 (T / "t5b_type.md").write_text(md(t5b))
 print(md(t5)); print(); print(md(t5b))
+
+# ---- Table 7: GATES and CLAN over repeated splits (median rule)
+ga, cl = pd.read_csv(V / "gates.csv"), pd.read_csv(V / "clan.csv")
+au = json.load(open(V / "autoc.json"))
+gl = {"G1 largest predicted saving": "Largest predicted saving", "G2 middle": "Middle", "G3 smallest predicted saving": "Smallest predicted saving",
+      "G3 minus G1": "Smallest − largest (log points × 100)"}
+rows = []
+for r in ga.itertuples():
+    if r.group.startswith("G3 minus"):
+        rows.append((gl[r.group], f1(100 * r.att), ci(100 * r.lo, 100 * r.hi), f"{r.p_adj:.2f}"))
+    else:
+        rows.append((gl[r.group] + " tercile", f1(r.pct_saving) + "%", ci(r.pct_lo, r.pct_hi), f"{r.p_adj:.3f}" if r.p_adj >= 0.001 else "<0.001"))
+rows.append(("Targeting test: AUTOC (log points × 100)", f1(100 * au["autoc_median"]), ci(100 * au["lo"], 100 * au["hi"]), f"{au['p_adj']:.2f}"))
+t7 = pd.DataFrame(rows, columns=["Held-out group (forest ranking)", "Estimate", "95% CI", "Adjusted p"])
+(T / "t7_gates.md").write_text(md(t7))
+fmt = {"Share IMD Q1": lambda v: f"{100 * v:.0f}%", "Share council tax A": lambda v: f"{100 * v:.0f}%",
+       "Mean IMD quintile": lambda v: f"{v:.2f}", "Mean council tax band (A=1)": lambda v: f"{v:.2f}",
+       "Mean baseline gas, kWh": lambda v: f"{v:,.0f}", "Mean floor area band": lambda v: f"{v:.2f}"}
+cn = {"Share IMD Q1": "Share in IMD quintile 1", "Share council tax A": "Share in council tax band A",
+      "Mean IMD quintile": "Mean IMD quintile", "Mean council tax band (A=1)": "Mean council tax band (A = 1)",
+      "Mean baseline gas, kWh": "Mean same-window baseline gas (kWh/yr)", "Mean floor area band": "Mean floor area band"}
+t7b = pd.DataFrame({"Treated homes": [cn[v] for v in cl.variable], "Largest-saving tercile": [fmt[v](t) for v, t in zip(cl.variable, cl.top)],
+                    "Smallest-saving tercile": [fmt[v](b) for v, b in zip(cl.variable, cl.bottom)],
+                    "Adjusted p": [f"{p:.3f}" if p >= 0.001 else "<0.001" for p in cl.p_adj]})
+(T / "t7b_clan.md").write_text(md(t7b))
+print(md(t7)); print(); print(md(t7b))

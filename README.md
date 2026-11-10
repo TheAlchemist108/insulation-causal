@@ -25,8 +25,10 @@ python src/rev_het.py 20      # BLP, GATES/CLAN/AUTOC over 20 splits            
 python src/rev_blp_type.py    # BLP with property type, subgroups by type         (~3 min)
 python src/make_tables.py     # paper tables from outputs/
 python src/figures.py         # paper figures from outputs/
-cd paper && latexmk -pdf main.tex
+cd paper && python build_tex.py && latexmk -pdf main.tex && python audit.py
 ```
+
+The paper's master text is `paper/paper_source.md` (exported from the editable draft). `build_tex.py` converts it to `main.tex`, using the figures in `paper/figures/`; `audit.py` recomputes every key number from `outputs/` and checks it against the text. `paper/arxiv_submission.zip` is the self-contained arXiv upload (`main.tex` + figures), tested to compile on its own.
 
 Seed: 20261106. First-version outputs are in `outputs/`; revision outputs in `outputs/revision/`.
 
@@ -46,7 +48,10 @@ Seed: 20261106. First-version outputs are in `outputs/`; revision outputs in `ou
 | `src/rev_het.py`, `src/rev_het_blp.py` | Revision: best linear projection, GATES/CLAN and AUTOC over repeated splits |
 | `src/rev_blp_type.py` | Revision: projection and subgroups by property type |
 | `src/make_tables.py`, `src/figures.py` | Paper tables and figures, built only from `outputs/` |
-| `paper/` | LaTeX source, figures and compiled PDF of the paper |
+| `paper/paper_source.md` | Master text of the paper |
+| `paper/build_tex.py`, `paper/template.tex` | Build `main.tex` from the master text |
+| `paper/audit.py` | Checks every key number in the paper against `outputs/` |
+| `paper/main.tex`, `paper/main.pdf`, `paper/arxiv_submission.zip` | LaTeX source, compiled PDF and arXiv package |
 
 ## Data licence
 

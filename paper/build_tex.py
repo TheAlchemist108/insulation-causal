@@ -1,11 +1,11 @@
-"""Convert the paper's master text (Claude Doc exported as markdown, saved to build/doc_export.md)
+"""Convert the paper's master text (the Claude Doc exported as markdown and saved as paper_source.md)
 into LaTeX for arXiv. Charts in the doc are replaced by the matplotlib figures in figures/,
 which are drawn from the same output files. Usage: python build_tex.py"""
 import re, subprocess
 from pathlib import Path
 
 P = Path(__file__).resolve().parent
-md = (P / "build" / "doc_export.md").read_text()
+md = (P / "paper_source.md").read_text()
 
 # --- title, byline, abstract, keywords
 title = re.search(r"^# (.+)$", md, re.M).group(1).strip()
@@ -65,6 +65,12 @@ if i >= 0:
     j = body.find("\\begin{itemize}", i); k = body.find("\\end{itemize}", j)
     body = (body[:j] + "\\begin{list}{}{\\setlength{\\leftmargin}{1.5em}\\setlength{\\itemindent}{-1.5em}\\setlength{\\itemsep}{2pt}}" +
             body[j + len("\\begin{itemize}"):k] + "\\end{list}" + body[k + len("\\end{itemize}"):])
+def shrink(m):
+    tbl = m.group(0)
+    n = tbl.split("\\toprule")[0].count(">{")
+    size = "\\footnotesize" if n >= 5 else "\\small"
+    return "{" + size + "\n" + tbl + "\n}"
+body = re.sub(r"\\begin\{longtable\}.*?\\end\{longtable\}", shrink, body, flags=re.S)
 # headings already carry their numbers; add them to the TOC-less layout and keep anchors
 tpl = (P / "template.tex").read_text()
 out = (tpl.replace("@@TITLE@@", latex_escape(title)).replace("@@ABSTRACT@@", latex_escape(abstract))

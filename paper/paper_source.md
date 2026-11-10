@@ -1,0 +1,558 @@
+# Who saves from insulation? Persistent but unequal gas savings from cavity wall insulation in England and Wales
+
+@Kaustubh · Nov 6, 2026
+
+## Abstract
+
+Insulating existing homes is central to UK decarbonisation and fuel-poverty policy, but how much it saves, for how long and for whom remain uncertain. Using the 2026 public sample of the National Energy Efficiency Data-Framework (NEED), I estimate the effect of cavity wall insulation, installed under government schemes in 2007–2012, on the gas use of gas-heated homes in England and Wales. A doubly robust difference-in-differences estimator with cross-fitted machine-learning nuisance models compares each installation cohort with never-insulated homes.
+
+Cavity wall insulation cut gas use by 8.8% (95% CI 7.5–10.2%), about 1,440 kWh a year. Difference-in-differences and lagged-outcome adjustment bracket the effect at 9.0–10.6%. Savings appeared in the installation year and did not fade over five years, unlike in an earlier NEED study; a conventional fixed-effects specification on the same data shows no fading either. The conclusion survives violations of parallel trends as large as those seen before installation.
+
+Savings were about half as large in council tax band A homes as in bands D–F (5.0% against 11.0%; Holm-adjusted p = 0.029). They also differed by property type, from 13.0% in detached houses to 5.5% in bungalows, and the sample cannot separate value from type. The gap between the most and least deprived areas (6.4% against 9.7%) is not significant, and the sample could detect only a gap nearly twice as large. Low gas use before the retrofit, measured outside the outcome window, does not explain who saved least; an apparent link in a first analysis reflected regression to the mean. A causal forest finds no heterogeneity it can exploit on held-out data. Loft insulation saved 2.4%, and electricity use, a placebo outcome, did not change.
+
+**Keywords:** retrofit; cavity wall insulation; energy efficiency; prebound effect; difference-in-differences; double machine learning; causal forest; fuel poverty
+
+## 1. Introduction
+
+Cavity wall insulation installed under government schemes in 2007–2012 cut gas use in English and Welsh homes by about 9%, and the saving lasted at least five years. It was smaller in the lowest-value homes, which are more often flats, terraces and bungalows than detached houses. This paper estimates that saving, asks which homes saved least, and tests one explanation for the shortfall: that homes using little gas before the retrofit had less to save.
+
+Insulating the existing housing stock is central to UK decarbonisation and fuel-poverty policy. Between 2008 and 2012, energy suppliers funded cavity wall and loft insulation under two obligations, the Carbon Emissions Reduction Target (CERT) and the Community Energy Saving Programme (CESP). In the public NEED sample used here, 14.3% of homes have a scheme cavity wall insulation record, and 53% of those were installed in 2007–2012. The successor scheme, the Energy Company Obligation (ECO), targets low-income and vulnerable households.
+
+These schemes credit suppliers with modelled savings: an engineering estimate of how much less energy a typical home needs once it is insulated (Ofgem, 2018). Realised savings can differ, for technical and for behavioural reasons. Households in cold, poorly insulated homes often heat them less than models assume. When those homes are insulated they have less excess consumption to cut, and they may use some of the improvement to be warmer rather than to pay less (Sunikka-Blank and Galvin, 2012; Sorrell, Dimitropoulos and Sommerville, 2009).
+
+If these effects are concentrated among low-income households, schemes that target them will deliver smaller measured savings than modelled. They may also deliver benefits that meter data cannot see, in warmth and health. Both matter for how schemes are scored and judged.
+
+The closest prior study, Peñasco and Díaz Anadón (2023), used NEED data to the 2017 gas year and found that cavity wall savings faded within a few years. If savings fade, schemes that credit savings over many years overstate them. This paper re-examines persistence with newer data and an estimator robust to effects that differ across cohorts and over time.
+
+The paper asks three questions:
+
+1. How much, and for how long, does scheme-installed cavity wall insulation cut gas use?
+2. Which homes save least?
+3. Is the shortfall in lower-value homes consistent with the prebound effect, proxied by low gas use before the retrofit?
+
+It makes three contributions.
+
+1. **A persistent average effect, with its sensitivity mapped.** A doubly robust difference-in-differences estimator with cross-fitted machine-learning nuisance models (Sant'Anna and Zhao, 2020; Chang, 2020) compares each installation cohort with never-insulated homes. Savings show no decay over five years. A conventional fixed-effects specification on the same data also shows none, so the difference from the fading found earlier is unlikely to come from the estimator alone. The estimate is bracketed by difference-in-differences and lagged-outcome adjustment (Ding and Li, 2019), and its sensitivity to violations of parallel trends is bounded (Rambachan and Roth, 2023).
+2. **Who saves least, with valid inference.** Savings are about half as large in council tax band A homes as in bands D–F, a gap that survives correction for multiple comparisons. Savings also differ by property type, from 13.0% in detached houses to 5.5–7.5% in flats, terraces and bungalows; value and type are too closely related for this sample to separate. The deprivation gap is smaller and not significant, and the sample is too small to detect a gap of that size. Formal heterogeneity tests based on held-out data and doubly robust scores replace the descriptive forest summaries of a first version of this analysis; they find no heterogeneity that a causal forest can reliably exploit.
+3. **A negative result on the simplest prebound account.** A first analysis suggested that low pre-retrofit gas use explained who saved least. Measured outside the outcome window, it does not: homes that used little gas before saved the same share as homes that used a lot. The earlier pattern came from regression to the mean.
+
+Machine learning plays a supporting role. It fits the nuisance functions and ranks homes for heterogeneity tests, and every claim about heterogeneity rests on held-out data or doubly robust scores rather than on a model's own fit. The main specification was committed to version control before any consumption values were analysed, and every later change is logged (Section 4.6). The data are public and the code is open.
+
+## 2. Background
+
+Realised savings from insulation can fall well short of engineering predictions, and evidence on who saves least is thin and mixed. This section sets out that evidence, the closest prior study, and the methods the paper builds on.
+
+### 2.1 Modelled versus realised savings
+
+Much of the strongest ex post evidence is from the United States. Fowlie, Greenstone and Wolfram (2018) randomly encouraged take-up of the Weatherization Assistance Program and found that model-projected savings were more than three times realised savings. In the residential programmes studied by Allcott and Greenstone (2017), average realised savings were 68% of the savings predicted to participants. Christensen, Francisco, Myers and Souza (2023) decomposed a similar gap. They attributed up to 41% of it to bias in the engineering model, mainly for wall insulation, about 43% to variation in workmanship, and only about 6% to the rebound effect.
+
+British evidence on realised savings is mixed. The Department of Energy and Climate Change (2014) compared insulated homes in NEED with matched uninsulated homes. It reported median gas savings of 9.2% (1,500 kWh) for cavity wall insulation and 2.8% (400 kWh) for loft insulation installed in 2011. Hamilton et al. (2016) followed about 169,000 gas-heated English homes and found that retrofits reduced gas use, with larger reductions when measures were combined.
+
+Webber, Gouldson and Kerr (2015) evaluated the Kirklees Warm Zone, which insulated about 51,000 homes in 2007–2010. Realised impacts exceeded predictions overall. In lower-income areas, though, impacts only matched predictions, while in middle- and higher-income areas they exceeded them. In the Netherlands, Kattenberg, Eichholtz and Kok (2026) found gas savings of about 19% that persisted for up to ten years. Their evidence on income is mixed: higher-income owner-occupiers reduced gas use less in one analysis, but the authors conclude that income does not significantly affect the return to insulation.
+
+### 2.2 Prebound, comfort-taking and warmth
+
+Two behavioural mechanisms can push realised savings below modelled savings. The *prebound effect* (Sunikka-Blank and Galvin, 2012) is that homes with poor energy ratings use much less energy than their ratings predict, because occupants heat fewer rooms, for fewer hours, to lower temperatures. Such a home has less excess consumption to remove. Galvin and Sunikka-Blank (2016) argue that a large prebound effect combined with low income signals fuel poverty. *Comfort-taking*, the direct rebound effect, is that occupants use part of an efficiency gain to heat their homes more (Sorrell, Dimitropoulos and Sommerville, 2009).
+
+Both mechanisms are expected to be strongest in low-income households, who are more likely to under-heat to save money. Milne and Boardman (2000) analysed how much of the potential saving low-income households in monitored British schemes took back as higher temperatures, and how this depended on how warm the home was beforehand. In the Warm Front scheme, Hong, Oreszczyn and Ridley (2006) found that cavity wall and loft insulation reduced space-heating fuel use by about 10% in centrally heated homes. In the Welsh Arbed scheme, Poortinga et al. (2018) measured indoor temperatures about 0.84 K higher than in comparison homes after retrofit. Warmth matters for health: a Cochrane review found that warmth and energy efficiency improvements were associated with better general, respiratory and mental health, especially for people with inadequate warmth and chronic respiratory disease (Thomson et al., 2013).
+
+Recent causal machine-learning evidence points the same way. D'Amico et al. (2026) estimated much smaller savings from external wall insulation among English households with a high energy burden. Their consumption measure is modelled from the English Housing Survey rather than metered, so it cannot observe behaviour directly. The data used here are metered but contain no temperature measure. They can show who saves less gas, but not whether the difference is taken as warmth.
+
+### 2.3 The closest prior study
+
+Peñasco and Díaz Anadón (2023) estimated dynamic effects of cavity wall and loft insulation on gas use in England and Wales. They used NEED data for about 55,000 households and gas years 2005–2017, and a dynamic difference-in-differences regression with household fixed effects, five leads and five lags. Cavity wall insulation cut gas use by about 6.9% in the installation year. The effect became insignificant two years later, and the authors wrote that consumption returned to pre-installation levels after four years. They also found that gas use in the most deprived IMD band rose four and five years after installation. In a later comment, the authors clarified that savings fall rather than vanish, reporting cavity wall savings of 6–9% after five years (Peñasco and Díaz Anadón, 2024).
+
+This paper differs in four ways. First, it compares each installation cohort only with never-insulated homes, using an estimator that is robust to effects that differ across cohorts and over time. Second, it reports how sensitive the estimate is to violations of parallel trends rather than only testing for them. Third, it uses formal inference for heterogeneity, with a correction for multiple comparisons. Fourth, it uses the 2026 release of the public sample, with gas years to 2024, and publishes its code and logged specification. Section 5.2 tests directly whether a conventional fixed-effects specification on these data reproduces fading savings.
+
+### 2.4 Methods
+
+The question "what would this home's gas use have been without insulation?" has a natural design in panel data: compare each home with itself before and after, against untreated homes over the same years (difference-in-differences). Its key assumption is parallel trends: without treatment, treated and comparison homes would have changed in the same way. Roth et al. (2023) review recent work on this design.
+
+Parallel trends is more plausible conditional on property characteristics. Sant'Anna and Zhao (2020) give a doubly robust estimator that is consistent if either a propensity model or an outcome model is correct. Chang (2020) shows how to fit those models with machine learning and cross-fitting, following Chernozhukov et al. (2018). With staggered installation dates, comparing each cohort only with never-treated homes avoids the bias that two-way fixed effects estimators suffer when effects differ across cohorts (Callaway and Sant'Anna, 2021; Cengiz et al., 2019).
+
+Two results guide the robustness analysis. Ding and Li (2019) show that difference-in-differences and adjustment for the lagged outcome bracket the true effect: if one of their identifying assumptions holds, the two estimates lie on either side of it. Rambachan and Roth (2023) show how to bound the effect when parallel trends fails by no more than a stated amount, judged against the violations seen before treatment.
+
+For heterogeneity, causal forests (Wager and Athey, 2018; Athey, Tibshirani and Wager, 2019) estimate how the effect varies with covariates, but their individual estimates are noisy. Valid inference comes from three tools: the best linear projection of the conditional effect on chosen covariates (Semenova and Chernozhukov, 2021), group average treatment effects and classification analysis (GATES and CLAN; Chernozhukov et al., 2025), and the rank-weighted average treatment effect, which tests whether a ranking of units by predicted effect finds real differences (Yadlowsky et al., 2025).
+
+## 3. Data
+
+The analysis uses the 50,000-home public sample of NEED, released by the Department for Energy Security and Net Zero (DESNZ) in June 2026 under the Open Government Licence (DESNZ, 2026a). The main sample has 1,801 homes with cavity wall insulation and 22,641 never-insulated comparison homes.
+
+### 3.1 The NEED anonymised sample
+
+NEED links meter-point gas and electricity consumption to property attributes and to records of energy efficiency measures installed under government schemes. The public sample covers current domestic properties in England and Wales. For each home it gives annual gas and electricity use for 2005–2024, weather corrected and rounded to the nearest 100 kWh, with a validity flag for each year.
+
+Flags mark each home that has had cavity wall insulation (CWI) or loft insulation (LI) through a scheme, with the year of installation. In the sample, 14.3% of homes have a CWI record and 14.4% an LI record; 53% of the CWI and 72% of the LI installations are dated 2007–2012. NEED does not record how much insulation a loft had before, and DECC's insulation statistics treated professional loft top-ups as a distinct category of scheme installation (DECC, 2012).
+
+Gas years are not calendar years, and their definition changes during the period (DESNZ, 2026b):
+
+| Gas year | Period covered |
+| --- | --- |
+| 2005–2015 | October of the previous year to September |
+| 2016 | Mid-July 2016 to mid-July 2017 |
+| 2017 | Mid-June 2017 to mid-June 2018 |
+| 2018 onwards | Mid-May to mid-May of the following year |
+
+There is therefore a gap of about nine months between gas years 2015 and 2016, and gas years 2016–2018 overlap by about a month at each join. The main analysis window (Section 4.2) uses only gas years up to 2015 and is unaffected. In the event study, only the five-year coefficient for the 2011 cohort and the four- and five-year coefficients for the 2012 cohort use gas years 2016 and 2017. Weather correction applies in every year, though DESNZ notes that it does not fully adjust for rapid, extreme weather changes.
+
+Property variables are type, age band, floor area band, council tax band, Energy Performance Certificate (EPC) band and region. Area deprivation is given as the quintile of the English or Welsh Index of Multiple Deprivation (IMD) for the home's small area. The public sample has no postcode or small-area code, and no tenure or income variable.
+
+### 3.2 Sample construction
+
+1. **Gas-heated homes.** Homes whose main heating fuel is gas (40,445 of 50,000).
+2. **Treated homes.** CWI recorded in 2007–2012, with no loft insulation recorded in the six-year window around it. Loft-only homes, defined the same way, form a second treatment group.
+3. **Comparison homes.** Gas-heated homes with neither CWI nor LI ever recorded.
+4. **Valid consumption.** A home enters a cohort only if its gas use is flagged valid in all four years of that cohort's window (Section 4.2).
+
+| Group | Homes |
+| --- | --- |
+| CWI only, installed 2007–2012 | 1,801 |
+| Loft insulation only, installed 2007–2012 | 2,877 |
+| Never insulated (comparison) | 22,641 |
+| Stacked home-cohort rows, CWI analysis | 106,019 |
+
+Of the 1,801 CWI homes, 83 are in Wales. Before installation, CWI homes used a median of 16,300 kWh of gas a year, against 15,300 kWh for comparison homes.
+
+### 3.3 Selection into treatment
+
+Uptake was not random. CWI was most common in the most and least deprived IMD quintiles (about 18% and 17% of homes) and fell with council tax band, from 17% in band A to 5% in band G. Only 5% of homes built before 1930 received it, against 20–24% of homes built in 1930–99, because most older homes have solid walls with no cavity. Appendix A reports the resulting imbalance and how far the estimator's weights remove it.
+
+## 4. Empirical design
+
+The estimand is the average effect of insulation on the gas use of insulated homes (the average treatment effect on the treated, ATT), estimated by comparing each home's change in gas use with that of similar never-insulated homes.
+
+### 4.1 Stacked cohorts
+
+Homes insulated in each year g from 2007 to 2012 form a cohort. Each cohort is paired with all never-insulated homes, and the six cohort datasets are stacked (Cengiz et al., 2019). Comparison homes therefore appear once per cohort, and inference is clustered by home. Comparing treated homes only with never-treated homes avoids using already-treated homes as controls, which biases two-way fixed effects estimates when effects differ by cohort or over time.
+
+### 4.2 Timing and outcome
+
+Pre-installation years are g−2 and g−1; post-installation years are g+2 and g+3. Years g and g+1 are left out. Before 2015, gas years run October to September, while installation dates are calendar years, so an installation late in year g can fall in gas year g+1.
+
+The outcome is the change in mean log gas use between the two windows:
+
+```latex
+\Delta Y_{ig} = \tfrac{1}{2}\left(\ln y_{i,g+2} + \ln y_{i,g+3}\right) - \tfrac{1}{2}\left(\ln y_{i,g-2} + \ln y_{i,g-1}\right)
+```
+
+Effects are in log points; the percentage saving is 1 − exp(ATT).
+
+### 4.3 Doubly robust difference-in-differences
+
+Let D be 1 for a treated home and 0 for a comparison home, and X the covariates. Two nuisance functions are estimated: the propensity p(X) = P(D = 1 | X) and the comparison-group outcome model m₀(X) = E\[ΔY | D = 0, X\]. The doubly robust ATT (Sant'Anna and Zhao, 2020) with normalised weights is:
+
+```latex
+\widehat{\mathrm{ATT}} = \frac{\sum_i D_i\,(\Delta Y_i - \hat m_0(X_i))}{\sum_i D_i} \;-\; \frac{\sum_i w_i\,(\Delta Y_i - \hat m_0(X_i))}{\sum_i w_i}, \qquad w_i = \frac{(1-D_i)\,\hat p(X_i)}{1-\hat p(X_i)}
+```
+
+It is consistent if either nuisance model is correct. Both are fitted with gradient-boosted trees and five-fold cross-fitting, with folds grouped by home so a home's own data never fits its own predictions (Chang, 2020; Chernozhukov et al., 2018). Fitted propensities are clipped to \[0.01, 0.99\]. Standard errors come from the estimator's influence function, summed within homes.
+
+Machine learning has a narrow job here. It fits the two nuisance functions flexibly, so that the analyst does not have to choose interactions between property type, age, size, region and deprivation by hand. Identification still rests on conditional parallel trends, which no learner can supply.
+
+### 4.4 Covariates and the baseline-gas problem
+
+All covariates are fixed before installation: property type, age band, floor area band, council tax band (bands G–I merged), IMD quintile with a nation indicator, region, cohort, and mean log gas use over the pre-installation years g−2 and g−1.
+
+EPC band is excluded. It is mostly recorded after installation and reflects the insulation itself, so conditioning on it would absorb part of the effect. Council tax band is based on 1991 property values, so insulation cannot have changed it; it serves as a proxy for property value and household wealth in the absence of tenure or income.
+
+The gas covariate needs care. It is built from the same years, g−2 and g−1, that form the pre-period of the outcome. A home with a temporarily high reading in those years will tend to fall back afterwards whether or not it is insulated (regression to the mean). Adjusting for that reading turns the design into a hybrid of difference-in-differences and adjustment for the lagged outcome. Ding and Li (2019) show that these two approaches bracket the true effect when either one's assumption holds. The main specification, committed before the outcomes were analysed, keeps this covariate. Section 5.1 reports it alongside three alternatives:
+
+1. **Pure difference-in-differences:** no gas covariate.
+2. **Lagged-outcome adjustment:** the outcome is post-period mean log gas, adjusting for the pre-period level, with no differencing.
+3. **Earlier baseline:** the gas covariate is built from g−4 and g−3, outside the outcome window. Because gas data start in 2005, this is possible only for the 2009–2012 cohorts. On those cohorts, the same-window and no-covariate versions are re-estimated for a like-for-like comparison.
+
+### 4.5 Heterogeneity and multiple comparisons
+
+One heterogeneity question was committed in advance: are savings smaller in IMD quintile 1 than in quintile 5? Subgroup ATTs by IMD quintile use the same nuisance fits, with the estimator restricted to that subgroup. The standard error of the Q1−Q5 gap allows for comparison homes shared between the two estimates. All other subgroup analyses, by council tax band, property age and property type, are exploratory. For the three contrasts reported (IMD Q1 against Q5, council tax band A against bands D–F, and homes built in 1930–72 against 1973–99), p-values are also given with Holm's adjustment. The minimum detectable effect at 80% power and a 5% two-sided test is 2.80 times the standard error of each contrast.
+
+Three further tools give valid inference on heterogeneity.
+
+1. **Best linear projection (BLP).** The conditional effect among treated homes is projected on IMD quintile, council tax band, floor area band, age band and baseline log gas, using the doubly robust score with home-clustered sandwich standard errors (Semenova and Chernozhukov, 2021). With the covariates Z centred on treated means, the intercept is the ATT:
+
+```latex
+\hat\beta = \Big(\sum_i D_i Z_i Z_i^{\top}\Big)^{-1} \sum_i \Big(D_i - (1-D_i)\frac{\hat p(X_i)}{1-\hat p(X_i)}\Big) Z_i \big(\Delta Y_i - \hat m_0(X_i)\big)
+```
+
+The projection is run on the main sample, with the same-window baseline, and on the 2009–2012 cohorts with the earlier baseline from g−4 and g−3, each with and without property-type indicators.
+
+2. **GATES and CLAN.** Homes are split at random into two halves, by home. A causal forest (CausalForestDML; Battocchi et al., 2019) with 400 trees is fitted to one half and used to rank the other half by predicted saving. On the held-out half, the doubly robust ATT is estimated within terciles of that ranking (GATES), and the mean characteristics of treated homes in the top and bottom terciles are compared (CLAN). The forest's heterogeneity variables are IMD quintile, council tax band, age band, floor area band, property type and same-window baseline log gas; region, nation and cohort are controls. This is repeated over 20 random splits. Each split gives estimates with 97.5% confidence intervals; the reported estimate and bounds are the medians across splits, and the reported p-value is twice the median p-value, which preserves 95% coverage (Chernozhukov et al., 2025).
+3. **Targeting test (AUTOC).** On each held-out half, the saving among the top fraction q of treated homes ranked by the forest (with comparison homes above the same score threshold) is compared with the saving among all homes. The area under this targeting curve, averaged over q = 0.1, 0.2, …, 1.0, measures whether the ranking finds real differences; it is zero if it does not. This adapts the rank-weighted average treatment effect of Yadlowsky et al. (2025) to the ATT. Standard errors come from 300 home-level Bayesian bootstrap draws with the nuisance fits held fixed, and splits are combined as above.
+
+### 4.6 Checks and transparency
+
+1. **Event study.** The same estimator applied to the change from year g−1 to each year g+e, for e from −4 to +5. The joint covariance of the nine coefficients comes from home-level influence functions, which allows a joint test of the pre-installation coefficients and the sensitivity analysis in Section 4.7.
+2. **Robustness.** Post years g+1 and g+2; outcome in kWh levels; loft insulation as the treatment; propensities clipped at 0.001 instead of 0.01; rows with propensity below 0.01 trimmed rather than clipped; and pre-1930 homes excluded.
+3. **Placebo outcome.** Electricity use, which wall insulation should barely affect in gas-heated homes.
+4. **Comparison with a conventional specification.** A two-way fixed effects regression of log gas on home and year fixed effects and event-time indicators from −5 to +5, on gas years 2005–2017, mirroring the design of Peñasco and Díaz Anadón (2023). It is run on all gas-heated homes, with separate indicators for cavity wall and loft insulation, and on the units of the main design only.
+
+The main specification (sample, timing, outcome, covariates, estimator and the IMD question) was written down and committed to version control before any consumption values were analysed. Every later change, including all of the analyses in Sections 4.4, 4.5 and 4.7 beyond the main specification, is logged with its date and reason in the repository (deviations D1–D12). This is not a formal pre-registration, because the specification was not registered with a third party.
+
+### 4.7 Sensitivity to parallel-trends violations
+
+A pre-installation coefficient that differs from zero does not by itself show that parallel trends fails after installation, and one that is close to zero does not show that it holds (Roth et al., 2023). Following Rambachan and Roth (2023), I instead ask how large a post-installation violation would have to be to overturn the conclusion that insulation saves gas.
+
+The target is the average of the event-study coefficients two and three years after installation, the same post-installation years as the main estimate. Two restrictions are used. Under *relative magnitudes*, the change in the violation between consecutive post-installation years is at most M̄ times the largest such change before installation. Under *smoothness*, the slope of the violation can change by at most M log points per year. For each value, the robust 95% confidence set is computed with the Python port of Rambachan and Roth's method (`honestdid` 0.1.1), using conditional least-favourable intervals for relative magnitudes and fixed-length intervals for smoothness. The breakdown value is the smallest M̄ or M at which the confidence set includes zero.
+
+The target differs from the main 8.8% estimate in two ways: its base year is g−1 alone, and it has no gas covariate. The sensitivity analysis therefore bounds the event-study analogue of the main estimate, not the 8.8% itself.
+
+## 5. Results
+
+Cavity wall insulation reduced gas use by 8.8% (95% CI 7.5–10.2%), or 1,437 kWh a year (1,262–1,612 kWh). The saving appears in the installation year and holds for five years, and the estimate changes little across specifications that handle the baseline, overlap and timing differently.
+
+### 5.1 Average effects
+
+Table 1. Effect of cavity wall insulation (CWI) on gas use. Saving = 1 − exp(ATT); home-clustered 95% confidence intervals.
+
+| Specification | Cohorts | Gas saving | 95% CI | Treated homes |
+| --- | --- | --- | --- | --- |
+| **Main specification** (committed in advance) | 2007–12 | 8.8% | 7.5–10.2 | 1,801 |
+| Pure DiD: no gas covariate | 2007–12 | 10.6% | 9.2–12.0 | 1,801 |
+| Lagged-outcome adjustment | 2007–12 | 9.0% | 7.6–10.3 | 1,801 |
+| Early baseline covariate (g−4, g−3) | 2009–12 | 9.7% | 8.0–11.3 | 1,143 |
+| Same-window covariate, same cohorts | 2009–12 | 9.1% | 7.4–10.7 | 1,143 |
+| Pure DiD, same cohorts | 2009–12 | 10.2% | 8.5–11.9 | 1,143 |
+| Post years g+1 to g+2 | 2007–12 | 9.6% | 8.4–10.7 | 1,757 |
+| Outcome in kWh | 2007–12 | 1,437 kWh/yr | 1,262–1,612 | 1,801 |
+| Propensities clipped at 0.001 | 2007–12 | 8.8% | 7.5–10.1 | 1,801 |
+| Pre-1930 homes excluded | 2007–12 | 8.9% | 7.5–10.3 | 1,670 |
+| Propensity below 0.01 trimmed | 2007–12 | 8.9% | 7.5–10.3 | 1,647 |
+| Loft insulation only (second treatment) | 2007–12 | 2.4% | 1.2–3.7 | 2,877 |
+| Placebo: CWI effect on electricity | 2007–12 | 0.2% | −1.4 to 1.8 | 1,991 |
+
+The main estimate is close to DECC's matched-comparison estimate for 2011 installations, 9.2% or 1,500 kWh (Department of Energy and Climate Change, 2014), despite a different estimator and sample.
+
+The baseline covariate moves the estimate, but only within a narrow range. Without it (pure difference-in-differences) the saving is 10.6%; with lagged-outcome adjustment instead of differencing it is 9.0%. If either approach's assumption holds, these two bracket the true effect (Ding and Li, 2019), so the saving lies between about 9.0% and 10.6%. The main estimate, 8.8%, sits just below that range, so it is, if anything, conservative. On the 2009–2012 cohorts, replacing the same-window covariate with one built from g−4 and g−3 raises the estimate from 9.1% to 9.7%. Regression to the mean in the baseline covariate therefore does not inflate the average saving; if anything it slightly lowers it.
+
+### 5.2 Timing
+
+&#91;embedded content: Figure 1. NEED anonymised data 2026 (DESNZ). Blue: doubly robust stacked DiD, 1,367–2,003 treated homes per year, home-clustered 95% CIs. Grey: two-way fixed effects on all gas-heated homes, gas years 2005–2017.\]
+
+Savings reach 7.5% in the installation gas year, which includes months before installation, and about 10–11% from the first full year. Over years one to five they average 10.1%, and five years on they are still 9.5%, with no sign of decay.
+
+**Reconciling 8.8% and 10%.** The main estimate (8.8%) and the event-study level (about 10%) differ mainly because the main estimate adjusts for pre-installation gas use and the event study does not; the main estimate without that covariate is 10.6%. Their different base years (the mean of g−2 and g−1 against g−1 alone) matter less.
+
+Before installation, the estimates are small. Two years before, treated homes used 1.4% more gas relative to comparison homes than in the base year (95% CI 0.2–2.6%). Three and four years before, the differences are 0.5% and 1.5% and not significant. The three pre-installation coefficients are not jointly significant (Wald χ² = 6.55 with 3 degrees of freedom, p = 0.088).
+
+A conventional two-way fixed effects regression on these data also shows no fading (Figure 1, grey; Appendix Table C1). On all gas-heated homes, with separate indicators for loft insulation, savings are 9.2–9.5% in years one, two, four and five and 8.6% in year three. On the units of the main design only, they are 9.9–10.9% in years one to five. The fading savings reported by Peñasco and Díaz Anadón (2023) are therefore not reproduced on the 2026 public sample by either estimator (Section 7.2).
+
+### 5.3 Sensitivity to parallel-trends violations
+
+Table 2. Robust 95% confidence sets for the average saving two and three years after installation (Rambachan and Roth, 2023). The target uses g−1 as base year and no gas covariate.
+
+| Restriction on post-installation violations | Value | Estimate (%) | Robust 95% CI for saving (%) | Includes zero |
+| --- | --- | --- | --- | --- |
+| None (parallel trends holds exactly) | – | 10.2 | 8.8–11.6 | No |
+| Relative magnitudes | M̄ = 0.5 |  | 5.7–14.3 | No |
+| Relative magnitudes | M̄ = 1 |  | 1.6–15.1 | No |
+| Relative magnitudes | M̄ = 1.25 |  | −0.5 to 15.1 | Yes |
+| Relative magnitudes | M̄ = 1.5 |  | −2.7 to 15.1 | Yes |
+| Smoothness | M = 0 |  | 6.3–11.8 | No |
+| Smoothness | M = 0.0025 |  | 3.8–13.3 | No |
+| Smoothness | M = 0.005 |  | 0.8–14.8 | No |
+| Smoothness | M = 0.0075 |  | −2.2 to 16.1 | Yes |
+
+The conclusion that insulation saves gas survives post-installation violations of parallel trends as large as the largest violation seen before installation (M̄ = 1). It breaks down between M̄ = 1 and M̄ = 1.25. Under the smoothness restriction, a linear trend extrapolated from the pre-period (M = 0) still leaves a saving of 6.3–11.8%. The conclusion survives if the slope of that trend changes by up to 0.5 percentage points a year (M = 0.005), and breaks down by 0.75.
+
+The breakdown values show that the qualitative finding is robust to violations of the size the pre-period shows, but not much larger ones. The size of the saving is less certain than its sign: at M̄ = 1 the robust interval runs from 1.6% to 15.1%.
+
+### 5.4 Robustness and placebo
+
+Shifting the post window one year earlier gives 9.6%, close to the event-study level. The three overlap checks (clipping at 0.001, trimming rows below 0.01, and excluding pre-1930 homes) all give 8.8–8.9%. Loft insulation saved 2.4%, close to DECC's 2.8%.
+
+Electricity use, which wall insulation should not much affect in gas-heated homes, shows no change (0.2%, CI −1.4 to 1.8%). This argues against the result being driven by other changes in treated households, such as occupancy, that would move all energy use together.
+
+## 6. Who saves least
+
+Savings were smallest in the lowest-value homes: 5.0% in council tax band A against 11.0% in bands D–F, a gap that survives correction for multiple comparisons. The gap by area deprivation is smaller and not statistically significant. Pre-retrofit gas use, measured outside the outcome window, does not explain either.
+
+### 6.1 Subgroup effects
+
+&#91;embedded content: Figure 2. NEED anonymised data 2026 (DESNZ). CWI homes installed 2007–12; doubly robust DiD within subgroup, home-clustered 95% CIs. Subgroups other than IMD quintile are exploratory.\]
+
+Across IMD quintiles, savings rise from 6.4% in the most deprived to 9.7–10.0% in the two least deprived. The gap between quintiles 1 and 5, the one heterogeneity test committed in advance, is 3.6 log points (95% CI −1.1 to 8.2, p = 0.13). The minimum gap the sample could detect with 80% power is 6.6 log points, nearly twice the gap observed. The data are therefore consistent both with no deprivation gap and with one of up to about 8 log points.
+
+The gradient by council tax band is steeper: 5.0% in band A, 8.4–8.6% in bands B and C, and 10.9–11.5% in bands D to F. Homes built in 1973–99 save slightly more than those built in 1930–72 (9.7% against 8.5%). Table 3 tests the three contrasts.
+
+Table 3. Differences in saving between subgroups (log points × 100). Holm-adjusted p-values cover the three contrasts; MDE is the minimum detectable gap at 80% power and 5% two-sided significance.
+
+| Contrast | Savings (%) | Gap | 95% CI | p | Holm p | MDE (80%) |
+| --- | --- | --- | --- | --- | --- | --- |
+| IMD Q1 − Q5 (committed in advance) | 6.4 vs 9.7 | 3.6 | −1.1 to 8.2 | 0.132 | 0.265 | 6.6 |
+| Council tax A − bands D–F | 5.0 vs 11.0 | 6.5 | 1.6–11.4 | 0.010 | 0.029 | 7.0 |
+| Built 1930–72 − built 1973–99 | 8.5 vs 9.7 | 1.4 | −1.8 to 4.5 | 0.390 | 0.390 | 4.5 |
+
+The council-tax gap is 6.5 log points (95% CI 1.6–11.4) and remains significant after Holm's adjustment (p = 0.029). Because it was not specified in advance, it should be read as a strong exploratory finding rather than a confirmed one. The age-band gap is small and not significant.
+
+Council tax band is closely tied to property type. Among treated homes, 70% of those in band A are flats or terraced houses, against 7% in bands D–F, where 52% are detached. Section 6.4 shows that savings differ by property type and asks whether the council-tax gradient survives holding type fixed.
+
+### 6.2 Pre-retrofit gas use
+
+The first version of this analysis found that pre-installation gas use was the strongest predictor of savings in a causal forest. It read this as support for the prebound effect: homes that used little gas had less to save. That baseline, however, was the mean of g−2 and g−1, the same years that form the pre-period of the outcome. Readings in those years carry temporary ups and downs that fall back afterwards whether or not a home is insulated. If insulated homes were more often treated after a spell of unusually high use, those with high readings would fall back further than comparison homes with the same readings, and would appear to save more. That pattern is regression to the mean, not prebound.
+
+Table 4 removes the overlap by measuring baseline use in g−4 and g−3, two years before the outcome window, for the 2009–2012 cohorts.
+
+Table 4. Savings by tercile of earlier gas use (g−4, g−3), CWI homes installed 2009–12.
+
+| Tercile of gas use in g−4, g−3 | Mean baseline (kWh/yr) | Saving (%) | 95% CI (%) | Saving (kWh/yr) | 95% CI (kWh) | Treated homes |
+| --- | --- | --- | --- | --- | --- | --- |
+| Lowest | 10,503 | 10.5 | 7.2–13.7 | 975 | 643–1,307 | 381 |
+| Middle | 17,232 | 8.3 | 5.6–10.9 | 1,262 | 882–1,643 | 379 |
+| Highest | 26,302 | 10.2 | 7.5–12.8 | 2,173 | 1,697–2,648 | 383 |
+
+The proportional saving shows no gradient: 10.5%, 8.3% and 10.2% from the lowest to the highest tercile. The saving in kWh rises roughly in proportion to prior use. Homes that used little gas before saved about the same share as homes that used a lot.
+
+This contradicts the simplest version of the prebound account, in which low users save a smaller share. It does not rule out prebound altogether. Low total use reflects home size and occupancy as well as under-heating, and the public sample holds no modelled demand against which under-heating could be measured.
+
+### 6.3 Causal forest
+
+The first-version causal forest estimated an average effect of 8.9% for treated homes, close to the main estimate. Its variable importance ranked same-window baseline gas use first (0.44), then property age (0.20), council tax band (0.14), IMD quintile (0.10) and floor area (0.06). Variable importance records how often the forest splits on a variable, not whether the effect truly differs along it. The top-ranked variable is also the one most exposed to regression to the mean.
+
+A single held-out split in the first version gave savings of 10.6%, 9.0% and 6.7% across terciles of predicted saving. One split is a noisy basis for inference, so Section 6.4 replaces it with repeated splits and formal tests.
+
+### 6.4 Formal heterogeneity tests
+
+The formal tests find savings that vary with property type and value, but no heterogeneity that the causal forest can reliably detect on held-out data, and no deprivation gradient once other characteristics are held fixed.
+
+**Property type.** Savings were largest in detached houses and smallest in bungalows (Table 5). These subgroups are exploratory.
+
+Table 5. Savings by property type, CWI homes installed 2007–12.
+
+| Property type | Saving (%) | 95% CI | Treated homes |
+| --- | --- | --- | --- |
+| Detached | 13.0 | 10.7–15.3 | 358 |
+| Semi-detached | 8.9 | 7.0–10.8 | 700 |
+| Terraced (mid or end) | 7.5 | 3.8–11.2 | 355 |
+| Flat | 6.5 | 0.6–12.2 | 176 |
+| Bungalow | 5.5 | 1.5–9.4 | 212 |
+
+**Best linear projection.** Table 6 projects the effect for treated homes on their characteristics jointly. Signs are on the saving scale: a positive coefficient means a larger saving per unit.
+
+Table 6. Best linear projection of the effect among treated homes (change in saving per unit, log points × 100, with 95% CI). Doubly robust DiD score, home-clustered standard errors. \* p < 0.05. Columns A and B use the same-window baseline (g−2, g−1); C and D use the earlier baseline (g−4, g−3) on the 2009–2012 cohorts.
+
+| Term | (A) Main sample | (B) A + property type | (C) 2009–12, early baseline | (D) C + property type |
+| --- | --- | --- | --- | --- |
+| Average saving (ATT) | 9.2\* \[7.8, 10.7\] | 9.2\* \[7.8, 10.7\] | 10.2\* \[8.3, 12.0\] | 10.2\* \[8.3, 12.0\] |
+| IMD quintile (1 = most deprived) | −0.2 \[−1.5, 1.0\] | −0.2 \[−1.4, 1.1\] | −0.1 \[−1.6, 1.4\] | 0.1 \[−1.5, 1.6\] |
+| Council tax band (A = 1) | 1.5 \[−0.1, 3.1\] | 1.3 \[−0.4, 3.0\] | 1.4 \[−0.5, 3.4\] | 0.8 \[−1.3, 3.0\] |
+| Floor area band | 0.2 \[−3.3, 3.7\] | −1.0 \[−4.6, 2.7\] | 0.3 \[−4.4, 5.0\] | −0.6 \[−5.5, 4.3\] |
+| Age band | 0.0 \[−2.7, 2.7\] | −0.7 \[−3.6, 2.3\] | −0.2 \[−3.6, 3.2\] | −1.5 \[−5.3, 2.4\] |
+| Baseline ln gas | 2.1 \[−3.9, 8.0\] | 1.8 \[−4.4, 8.0\] | −2.7 \[−9.1, 3.8\] | −3.2 \[−10.0, 3.7\] |
+| Detached (vs semi-detached) |  | 2.8 \[−2.0, 7.6\] |  | 5.2 \[−0.7, 11.2\] |
+| Bungalow |  | −4.2 \[−9.0, 0.5\] |  | −4.9 \[−11.0, 1.3\] |
+| Flat |  | −1.6 \[−9.1, 5.9\] |  | 0.4 \[−8.9, 9.7\] |
+| Terraced |  | −0.7 \[−5.5, 4.2\] |  | −1.5 \[−7.6, 4.7\] |
+
+The average saving in the projection (9.2 log points, or 8.8%) matches the main estimate. Three results follow.
+
+1. **No deprivation gradient given other characteristics.** The IMD coefficient is close to zero in every column. On its own, without other covariates, it is 0.8 points of saving per quintile towards the least deprived (95% CI −0.2 to 1.8, p = 0.12).
+2. **Value and type cannot be separated.** The council-tax coefficient is the largest, about 1.5 points of saving per band, but its interval includes zero in every column, and it shrinks when property type is added. No single type coefficient is significant either. The subgroup contrasts in Table 3 and Table 5 show that savings differ along these lines; the projection shows that the sample cannot say which of the two drives the difference.
+3. **Baseline gas use does not predict savings.** With the same-window baseline, the coefficient is positive but small and not significant. With the earlier baseline it changes sign. Neither supports the claim that homes using less gas before save a smaller share.
+
+**GATES, CLAN and the targeting test.** Across 20 splits, the forest's held-out ranking separates savings only weakly (Table 7). Homes it ranks highest saved 10.0% and those it ranks lowest 7.3%, but the gap, 2.5 log points, is far from significant (adjusted p = 0.68). The area under the targeting curve is 0.9 log points (95% CI −1.1 to 3.0, adjusted p = 0.58). On held-out data, the forest does not find heterogeneity that it can reliably exploit.
+
+Table 7. Group average treatment effects by tercile of the forest's held-out ranking, and the targeting test (median over 20 splits; 95% CIs and adjusted p-values from the median rule of Chernozhukov et al., 2025).
+
+| Held-out group (forest ranking) | Estimate | 95% CI | Adjusted p |
+| --- | --- | --- | --- |
+| Largest predicted saving tercile | 10.0% | 6.1–13.4 | <0.001 |
+| Middle tercile | 9.4% | 5.7–12.9 | <0.001 |
+| Smallest predicted saving tercile | 7.3% | 3.0–11.2 | <0.001 |
+| Smallest − largest (log points × 100) | 2.5 | −3.4 to 8.5 | 0.68 |
+| Targeting test: AUTOC (log points × 100) | 0.9 | −1.1 to 3.0 | 0.58 |
+
+The classification analysis (Table 8) shows whom the forest places in the bottom tercile. It puts there homes that are more deprived, lower in council tax band, smaller and lower in same-window baseline gas use. These differences are large and significant, but they describe the forest's ranking, not differences in the effect itself, since the ranking does not separate effects significantly. The forest's preference for low same-window baseline use is consistent with the regression-to-the-mean artefact described in Section 6.2.
+
+Table 8. Characteristics of treated homes in the top and bottom terciles of the forest's held-out ranking (medians over 20 splits; adjusted p-values by the median rule).
+
+| Treated homes | Largest-saving tercile | Smallest-saving tercile | Adjusted p |
+| --- | --- | --- | --- |
+| Share in IMD quintile 1 | 14% | 23% | 0.008 |
+| Share in council tax band A | 15% | 26% | <0.001 |
+| Mean IMD quintile | 3.44 | 3.01 | <0.001 |
+| Mean council tax band (A = 1) | 3.32 | 2.54 | <0.001 |
+| Mean same-window baseline gas (kWh/yr) | 17,993 | 15,534 | <0.001 |
+| Mean floor area band | 2.48 | 2.13 | <0.001 |
+
+Taken together, heterogeneity in savings is modest. It is visible in simple contrasts by property value and type, but too weak for a flexible learner to detect on held-out data in a sample of this size.
+
+## 7. Discussion
+
+Three conclusions are well supported. Scheme-installed cavity wall insulation cut gas use by about 9–10%. The saving lasted at least five years. It was smaller in the lowest-value homes. A fourth, the reason for that gradient, remains open.
+
+### 7.1 Interpreting the property-value gradient
+
+Savings in council tax band A homes were about half those in bands D–F. The pattern by property type points to the kind of building, but the evidence cannot exclude behaviour.
+
+1. **Building physics.** Savings differ by property type: detached houses saved 13.0%, semi-detached 8.9%, terraced houses 7.5%, flats 6.5% and bungalows 5.5% (Section 6.4). Value and type are entangled, and in a joint projection neither is individually significant. The order is what one would expect if savings track the share of a home's heat that is lost through its walls: largest for detached houses, with four exposed walls, and smallest for flats and terraces, which share walls, and bungalows, which lose relatively more heat through the roof and floor. This paper does not test that mechanism against engineering estimates, so it is an interpretation, not a finding.
+2. **Prebound, proxied by low prior gas use.** If lower-value homes save less because they used little gas before, savings should fall with prior use. Measured outside the outcome window, they do not (Section 6.2). Total gas use is a weak proxy for under-heating, though, because it also reflects home size and occupancy, and a direct test needs modelled demand before the retrofit.
+3. **Comfort-taking.** Households may use part of the improvement to keep warmer. This would lower measured savings most where homes were coldest, and fits evidence from monitored British schemes (Milne and Boardman, 2000; Poortinga et al., 2018). The data contain no temperature measure, so it cannot be tested here.
+4. **Installation quality.** Christensen et al. (2023) attribute much of the gap between projected and realised savings to variation in workmanship. Cavities in some housing may be harder to fill fully, or more often partly filled already. NEED does not record either.
+
+The welfare implications differ. A smaller saving that reflects building physics is simply what the measure delivers in that home. Under comfort-taking, a smaller gas saving comes with a gain in warmth, which is associated with better health for people in cold homes (Thomson et al., 2013). Under poor installation, it is a shortfall that better workmanship could close. The pattern by type fits the first, but the data cannot rule out the others.
+
+Council tax band measures property value in 1991, not household income or tenure. The gradient is therefore one by property value and type, and is not shown to be one by income.
+
+### 7.2 Why savings persist here but faded in earlier NEED work
+
+Peñasco and Díaz Anadón (2023) found cavity wall savings that faded within a few years. Here they do not. The obvious suspect is the estimator, since fixed-effects regressions with staggered treatment can produce misleading dynamics when effects vary across cohorts (Roth et al., 2023). On these data, however, a conventional fixed-effects specification also shows no fading (Figure 1 and Appendix Table C1). The difference is therefore unlikely to come from the estimator alone.
+
+It may come from the data release, since the earlier study used gas years only to 2017 from an earlier NEED release, or from sample construction, covariates or the treatment of homes with several measures. The public files do not allow an exact replication, so this question stays open. The fixed-effects specification on all gas-heated homes does show pre-installation coefficients of 1.4–2.3%, three of them significant, larger than in the main design. That is a reminder that results from this kind of regression on NEED depend on who is in the comparison group.
+
+Persistence is consistent with evidence from other settings. In the Netherlands, Kattenberg, Eichholtz and Kok (2026) found insulation savings that lasted up to ten years.
+
+### 7.3 Implications for scheme scoring and fuel poverty
+
+The Energy Company Obligation credits suppliers with modelled savings, not metered ones. ECO3 deemed scores were built from SAP and RdSAP modelling of typical dwellings, and their methodology notes that the score for a measure "is unlikely to match the actual saving" of a given installation (Ofgem, 2018). ECO4 scores are based on the annual bill saving of a measure or package, and full project scores depend on the home's SAP rating after the work (Ofgem, 2026).
+
+Two findings bear on this. First, the average cavity wall saving held for at least five years, so these data give no reason to shorten the lifetime over which savings are credited. Second, measured savings were about half as large in band A homes as in bands D–F. If two homes of the same archetype receive the same score, the score will overstate the realised gas saving in the lower-value home relative to the other. This paper does not compare realised savings with deemed scores directly, because the public sample does not contain them.
+
+The official fuel-poverty measure in England, Low Income Low Energy Efficiency (LILEE), already avoids metered use. A household is fuel poor if its home has a fuel-poverty energy efficiency rating of band D or below and its income after modelled energy costs falls below the poverty line. Those costs are modelled at an adequate heating regime, because fuel-poor households may limit their energy use (DESNZ, 2026c). Insulation can therefore move a home out of LILEE fuel poverty even when its metered gas use falls little.
+
+For scheme evaluation, the implication is narrow but concrete. Metered kWh saved measures one benefit of a retrofit. Where households under-heated before, it may understate progress on the fuel-poverty measure the schemes target. This paper shows only the smaller kWh saving, not any warmth or health gain. Measuring those requires temperature or health data alongside meter readings.
+
+### 7.4 Threats to the design
+
+- **Parallel trends.** Two years before installation, treated homes used 1.4% more gas relative to comparison homes than in the base year. The three pre-installation coefficients are not jointly significant (p = 0.088). Savings remain significant unless violations after installation exceed those before it (Section 5.3).
+- **Contaminated comparison group.** NEED records only measures installed through government schemes. Some comparison homes were probably insulated privately, which would bias the estimates towards zero. The savings here are best read as lower bounds.
+- **Selection on unobservables.** Households that took up insulation may differ in ways the covariates miss, such as changes in occupancy. Differencing removes fixed differences between homes, and the electricity placebo argues against broad household changes, but neither rules out shocks specific to heating.
+- **Overlap.** Weighting removes most, but not all, of the covariate imbalance; pre-1930 homes remain over-represented among weighted comparison homes (Appendix A). Results are similar when propensities are clipped differently, trimmed, or pre-1930 homes are dropped (Table 1).
+- **Spatial correlation.** Standard errors are clustered by home. Schemes were often delivered area by area, and the public sample has no small-area code, so errors that are correlated within areas cannot be accounted for. Confidence intervals may be somewhat too narrow.
+- **Measurement.** Consumption is annual, weather corrected and rounded to 100 kWh, and the gas-year definition changes during the period (Section 3.1). These add noise but apply equally to treated and comparison homes.
+- **Survivorship and fuel.** The sample contains only properties that still exist and are matched to meters in 2025, and main heating fuel is defined from 2022–2024 consumption. Insulation is unlikely to change either.
+
+### 7.5 What the public sample cannot do
+
+The public file has no tenure, income or small-area code. The study therefore cannot compare social renters, private renters and owner-occupiers, although tenure is central to retrofit policy, not least because of the split incentive between landlords, who pay for insulation, and tenants, who pay the bills. With about 300 treated homes per IMD quintile, the sample also lacks the power to detect a deprivation gap of the size observed. The much larger licensed NEED file, available through the UK Data Service, would address both.
+
+## 8. Conclusion
+
+Cavity wall insulation installed under government schemes in 2007–2012 cut gas use in gas-heated homes in England and Wales by 8.8% in the main specification, about 1,440 kWh a year, and by 9.0–10.6% across the bracketing specifications. The saving appeared in the installation year and showed no sign of fading over five years, under both the main estimator and a conventional fixed-effects specification.
+
+Savings were not equal. They were about half as large in council tax band A homes as in bands D–F, a gap that survives correction for multiple comparisons. Savings also differed by property type, from 13.0% in detached houses to 5.5–7.5% in flats, terraces and bungalows, and the sample cannot separate value from type. The gap by area deprivation was smaller and not statistically significant, and the sample could not reliably have detected a gap of that size. Low gas use before the retrofit, measured outside the outcome window, does not explain who saved least. An apparent link in a first analysis came from regression to the mean.
+
+Why lower-value homes save less is only partly settled. The pattern by property type fits building physics, but comfort-taking and installation quality may also contribute, and metered gas data alone cannot separate them. Repeating the analysis on the licensed NEED file would add tenure and the power to study deprivation. Linking meter data to indoor temperatures would show whether smaller savings in poorer homes are a loss or a gain in warmth.
+
+## Data and code availability
+
+All code, the main specification with its dated deviation log (D1–D12), result tables, figures and this paper's LaTeX source are at [github.com/TheAlchemist108/insulation-causal](https://github.com/TheAlchemist108/insulation-causal). The data are the NEED anonymised data 2026, 50,000-row sample, published by DESNZ under the Open Government Licence v3.0; its download URL and SHA-256 hash are recorded in the repository.
+
+The analysis used Python 3.13 with NumPy, pandas, SciPy, scikit-learn 1.9, EconML 0.17, statsmodels and honestdid 0.1.1; exact versions are in `requirements.txt`. The random seed is 20261106. The main pipeline runs in about 15 minutes on a laptop; the repeated-split heterogeneity analysis takes about an hour.
+
+## Use of AI tools
+
+The author used Claude (Anthropic), a large language model, as a research assistant for this study: to help write and debug the analysis code, search and check the literature, and draft and edit text. All analyses were run on the public data with the code in the repository, and the author reviewed the code, results and text and takes full responsibility for them.
+
+## Competing interests and funding
+
+The author declares no competing interests. This work received no specific funding.
+
+## References
+
+- Allcott, H. and Greenstone, M. (2012). Is there an energy efficiency gap? *Journal of Economic Perspectives* 26(1), 3–28.
+- Allcott, H. and Greenstone, M. (2017). Measuring the welfare effects of residential energy efficiency programs. NBER Working Paper 23386 (revised January 2024).
+- Athey, S., Tibshirani, J. and Wager, S. (2019). Generalized random forests. *Annals of Statistics* 47(2), 1148–1178.
+- Battocchi, K., Dillon, E., Hei, M., Lewis, G., Oka, P., Oprescu, M. and Syrgkanis, V. (2019). EconML: A Python package for ML-based heterogeneous treatment effects estimation. github.com/py-why/EconML.
+- Callaway, B. and Sant'Anna, P. H. C. (2021). Difference-in-differences with multiple time periods. *Journal of Econometrics* 225(2), 200–230.
+- Cengiz, D., Dube, A., Lindner, A. and Zipperer, B. (2019). The effect of minimum wages on low-wage jobs. *Quarterly Journal of Economics* 134(3), 1405–1454.
+- Chang, N.-C. (2020). Double/debiased machine learning for difference-in-differences models. *The Econometrics Journal* 23(2), 177–191.
+- Chernozhukov, V., Chetverikov, D., Demirer, M., Duflo, E., Hansen, C., Newey, W. and Robins, J. (2018). Double/debiased machine learning for treatment and structural parameters. *The Econometrics Journal* 21(1), C1–C68.
+- Chernozhukov, V., Demirer, M., Duflo, E. and Fernández-Val, I. (2025). Fisher–Schultz lecture: Generic machine learning inference on heterogeneous treatment effects in randomized experiments, with an application to immunization in India. *Econometrica* 93(4), 1121–1164.
+- Christensen, P., Francisco, P., Myers, E. and Souza, M. (2023). Decomposing the wedge between projected and realized returns in energy efficiency programs. *Review of Economics and Statistics* 105(4), 798–817.
+- D'Amico, B., Pomponi, F., Arehart, J. H. and Khaddour, L. (2026). Who cuts emissions, who turns up the heat? Causal machine learning estimates of energy efficiency interventions. *Energy and Buildings* 350, 116613.
+- Department of Energy and Climate Change (2012). Changes to insulation statistics methodology. London: DECC. \[VERIFY: the document is undated; it describes changes implemented in the September 2012 statistical release.\]
+- Department of Energy and Climate Change (2014). National Energy Efficiency Data-Framework: Summary of analysis using the National Energy Efficiency Data-Framework (NEED). London: DECC, June 2014.
+- Department for Energy Security and Net Zero (2026a). National Energy Efficiency Data-Framework (NEED): anonymised data 2026. London: DESNZ. Open Government Licence v3.0.
+- Department for Energy Security and Net Zero (2026b). Domestic NEED 2026 Annex D: methodology note. London: DESNZ.
+- Department for Energy Security and Net Zero (2026c). Fuel poverty statistics: methodology handbook 2026. London: DESNZ.
+- Ding, P. and Li, F. (2019). A bracketing relationship between difference-in-differences and lagged-dependent-variable adjustment. *Political Analysis* 27(4), 605–615.
+- Fowlie, M., Greenstone, M. and Wolfram, C. (2018). Do energy efficiency investments deliver? Evidence from the Weatherization Assistance Program. *Quarterly Journal of Economics* 133(3), 1597–1644.
+- Galvin, R. and Sunikka-Blank, M. (2016). Quantification of (p)rebound effects in retrofit policies: Why does it matter? *Energy* 95, 415–424.
+- Hamilton, I. G., Summerfield, A. J., Shipworth, D., Steadman, J. P., Oreszczyn, T. and Lowe, R. J. (2016). Energy efficiency uptake and energy savings in English houses: A cohort study. *Energy and Buildings* 118, 259–276.
+- Hong, S. H., Oreszczyn, T., Ridley, I. and the Warm Front Study Group (2006). The impact of energy efficient refurbishment on the space heating fuel consumption in English dwellings. *Energy and Buildings* 38(10), 1171–1181.
+- Kattenberg, L., Eichholtz, P. and Kok, N. (2026). The efficacy of energy efficiency: Measuring the returns to home insulation. *Energy Economics* 158, 109366.
+- Milne, G. and Boardman, B. (2000). Making cold homes warmer: The effect of energy efficiency improvements in low-income homes. *Energy Policy* 28(6–7), 411–424.
+- Ofgem (2018). ECO3 deemed scores methodology. Report prepared by BRE. London: Ofgem.
+- Ofgem (2026). ECO4 scores. ofgem.gov.uk/guidance/eco4-scores, accessed 10 November 2026.
+- Peñasco, C. and Díaz Anadón, L. (2023). Assessing the effectiveness of energy efficiency measures in the residential sector gas consumption through dynamic treatment effects: Evidence from England and Wales. *Energy Economics* 117, 106435.
+- Peñasco, C. and Díaz Anadón, L. (2024). A comment on "Assessing the effectiveness of energy efficiency measures in the residential sector gas consumption through dynamic treatment effects: Evidence from England and Wales". *Energy Economics* 139, 107946.
+- Poortinga, W., Jiang, S., Grey, C. and Tweed, C. (2018). Impacts of energy-efficiency investments on internal conditions in low-income households. *Building Research & Information* 46(6), 653–667.
+- Quispe, A. (2026). honestdid: Robust inference in difference-in-differences and event study designs (Python package, version 0.1.1, released 3 March 2026). github.com/anzonyquispe/honestdid.
+- Rambachan, A. and Roth, J. (2023). A more credible approach to parallel trends. *Review of Economic Studies* 90(5), 2555–2591.
+- Roth, J., Sant'Anna, P. H. C., Bilinski, A. and Poe, J. (2023). What's trending in difference-in-differences? A synthesis of the recent econometrics literature. *Journal of Econometrics* 235(2), 2218–2244.
+- Sant'Anna, P. H. C. and Zhao, J. (2020). Doubly robust difference-in-differences estimators. *Journal of Econometrics* 219(1), 101–122.
+- Semenova, V. and Chernozhukov, V. (2021). Debiased machine learning of conditional average treatment effects and other causal functions. *The Econometrics Journal* 24(2), 264–289.
+- Sorrell, S., Dimitropoulos, J. and Sommerville, M. (2009). Empirical estimates of the direct rebound effect: A review. *Energy Policy* 37(4), 1356–1371.
+- Sunikka-Blank, M. and Galvin, R. (2012). Introducing the prebound effect: The gap between performance and actual energy consumption. *Building Research & Information* 40(3), 260–273.
+- Thomson, H., Thomas, S., Sellstrom, E. and Petticrew, M. (2013). Housing improvements for health and associated socio-economic outcomes. *Cochrane Database of Systematic Reviews* 2013, Issue 2, CD008657.
+- Wager, S. and Athey, S. (2018). Estimation and inference of heterogeneous treatment effects using random forests. *Journal of the American Statistical Association* 113(523), 1228–1242.
+- Webber, P., Gouldson, A. and Kerr, N. (2015). The impacts of household retrofit and domestic energy efficiency schemes: A large scale, ex post evaluation. *Energy Policy* 84, 35–43.
+- Yadlowsky, S., Fleming, S., Shah, N., Brunskill, E. and Wager, S. (2025). Evaluating treatment prioritization rules via rank-weighted average treatment effects. *Journal of the American Statistical Association* 120(549), 38–51.
+
+## Appendix A. Covariate balance and overlap
+
+Raw comparison homes differ from treated homes mainly in age, type and region. Of 46 covariate columns, 22 have an absolute standardised mean difference (SMD) above 0.1 before weighting, the largest being pre-1930 homes (−0.59). With the estimator's comparison-group weights p/(1−p), 5 remain above 0.1 and the largest is −0.24, again pre-1930 homes. The outcome model of the doubly robust estimator adjusts for the remaining differences, and excluding pre-1930 homes leaves the estimate unchanged (8.9%; Table 1).
+
+Table A1. Means and standardised mean differences for selected covariates (stacked rows; comparison rows weighted by p/(1−p)). All 46 columns are in `outputs/revision/balance.csv`.
+
+| Covariate | Treated mean | Comparison, raw | Comparison, weighted | SMD raw | SMD weighted |
+| --- | --- | --- | --- | --- | --- |
+| Built before 1930 | 0.073 | 0.289 | 0.162 | −0.59 | −0.24 |
+| Built 1930–72 | 0.594 | 0.430 | 0.533 | 0.33 | 0.12 |
+| Built 1973–99 | 0.322 | 0.232 | 0.278 | 0.20 | 0.10 |
+| Built 2000 or later | 0.011 | 0.049 | 0.027 | −0.22 | −0.10 |
+| Mid terrace | 0.120 | 0.235 | 0.164 | −0.30 | −0.12 |
+| Semi-detached | 0.389 | 0.279 | 0.355 | 0.23 | 0.07 |
+| Flat | 0.098 | 0.146 | 0.109 | −0.15 | −0.03 |
+| Detached | 0.199 | 0.153 | 0.176 | 0.12 | 0.06 |
+| North West | 0.243 | 0.114 | 0.205 | 0.34 | 0.10 |
+| London | 0.061 | 0.159 | 0.097 | −0.32 | −0.12 |
+| IMD quintile 1 | 0.167 | 0.188 | 0.173 | −0.05 | −0.01 |
+| IMD quintile 5 | 0.289 | 0.222 | 0.261 | 0.15 | 0.06 |
+| Council tax band A | 0.173 | 0.209 | 0.180 | −0.09 | −0.02 |
+| Council tax band D | 0.180 | 0.172 | 0.176 | 0.02 | 0.01 |
+| Pre-period mean ln gas (g−2, g−1) | 9.651 | 9.566 | 9.637 | 0.16 | 0.03 |
+| Floor area band 1 (smallest) | 0.066 | 0.097 | 0.072 | −0.11 | −0.02 |
+| Floor area band 4 | 0.031 | 0.058 | 0.045 | −0.13 | −0.07 |
+
+Propensities are low throughout, because treated homes are few relative to stacked comparison rows. The median fitted propensity is 0.026 for treated homes and 0.014 for comparison rows; the maximum is 0.14 for treated homes. The clipping floor of 0.01 binds for 8.6% of treated rows and 38% of comparison rows. Clipping at 0.001 instead, or trimming rows below 0.01, leaves the estimate at 8.8–8.9% (Table 1).
+
+Table A2. Quantiles of the fitted propensity (main specification, clipped at 0.01).
+
+| Quantile | Treated rows | Comparison rows |
+| --- | --- | --- |
+| 0.00 | 0.0100 | 0.0100 |
+| 0.05 | 0.0100 | 0.0100 |
+| 0.25 | 0.0168 | 0.0100 |
+| 0.50 | 0.0263 | 0.0136 |
+| 0.75 | 0.0372 | 0.0241 |
+| 0.95 | 0.0607 | 0.0452 |
+| 0.99 | 0.0826 | 0.0672 |
+| 1.00 | 0.1358 | 0.2781 |
+
+## Appendix B. Minimum detectable effects
+
+For a contrast with standard error SE, the minimum detectable gap at 80% power and a 5% two-sided test is (1.96 + 0.84) × SE = 2.80 × SE. The IMD Q1 − Q5 contrast has SE = 0.0236 log points, so its MDE is 0.066 log points (6.6 percentage points of saving, approximately). The observed gap, 0.036, is a little over half that. The council-tax contrast (SE 0.0250) has an MDE of 0.070, and its observed gap, 0.065, is close to it. The age contrast (SE 0.0161) has an MDE of 0.045.
+
+In the first two cases the subgroups have about 300–570 treated homes each. Detecting a deprivation gap of 3.6 log points with 80% power would need standard errors about 45% smaller, more than three times as many treated homes per quintile.
+
+## Appendix C. Event-study coefficients
+
+Table C1. Saving relative to the gas year before installation (%; negative values mean treated homes used more gas than in the base year). This paper: doubly robust stacked DiD with home-clustered 95% CIs. Two-way FE: home and year fixed effects, event-time indicators −5 to +5 with endpoints binned, gas years 2005–2017, standard errors clustered by home; "all homes" uses 419,160 home-years from 38,384 gas-heated homes with separate loft-insulation indicators, and "main-design units" uses 313,148 home-years from 29,329 homes.
+
+| Year e | This paper: saving (%) | 95% CI | Treated homes | Two-way FE, all homes: saving (95% CI) | Two-way FE, main-design units: saving (95% CI) |
+| --- | --- | --- | --- | --- | --- |
+| −5 | – |  |  | −1.4 (−3.1 to 0.4) | 0.5 (−1.9 to 2.8) |
+| −4 | −1.5 | −3.5 to 0.5 | 1,367 | −2.3 (−3.8 to −0.8) | −1.3 (−3.2 to 0.6) |
+| −3 | −0.5 | −2.1 to 1.2 | 1,689 | −1.6 (−3.0 to −0.3) | −0.3 (−2.0 to 1.4) |
+| −2 | −1.4 | −2.6 to −0.2 | 1,933 | −1.7 (−2.8 to −0.6) | −0.9 (−2.2 to 0.4) |
+| −1 | 0 (base) |  |  | 0 (base) | 0 (base) |
+| 0 | 7.5 | 6.3–8.6 | 1,974 | 6.3 (5.3–7.2) | 7.2 (6.0–8.4) |
+| 1 | 9.9 | 8.6–11.2 | 1,945 | 9.2 (8.1–10.2) | 10.0 (8.6–11.3) |
+| 2 | 10.6 | 9.1–12.1 | 1,981 | 9.4 (8.3–10.5) | 10.7 (9.2–12.2) |
+| 3 | 9.8 | 8.2–11.4 | 2,003 | 8.6 (7.4–9.8) | 9.9 (8.3–11.4) |
+| 4 | 10.7 | 8.9–12.4 | 1,879 | 9.4 (8.1–10.6) | 10.9 (9.2–12.6) |
+| 5 | 9.5 | 7.6–11.4 | 1,879 | 9.5 (8.2–10.7) | 10.3 (8.5–12.0) |
+
+## Appendix D. Specification log
+
+The main specification was committed on 6 November 2026, before outcomes were analysed. Deviations D1–D3 (6 November) set the event study's covariates, added the first-version forest analysis and added subgroups by council tax band and age. Deviations D4–D12 (10 November) are the revision analyses: balance and overlap checks (D4), the baseline bracket and earlier baseline (D5), the joint event study and honest-DiD analysis (D6), multiplicity and power (D7), savings by earlier baseline (D8), the best linear projection (D9), repeated-split GATES, CLAN and targeting test (D10), the two-way fixed effects comparison (D11) and the projection with property type (D12). None changes the main specification. Each is described in full in `SPEC.md`.
