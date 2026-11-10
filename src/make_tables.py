@@ -9,7 +9,7 @@ R = Path(__file__).resolve().parents[1]
 O, V = R / "outputs", R / "outputs" / "revision"
 T = R / "paper" / "tables"; T.mkdir(parents=True, exist_ok=True)
 pct = lambda v: -(np.exp(v) - 1) * 100
-f1 = lambda v: f"{v:.1f}".replace("-", "\u2212")
+f1 = lambda v: f"{(round(v, 1) + 0.0):.1f}".replace("-", "\u2212")
 ci = lambda lo, hi: f"{f1(lo)} to {f1(hi)}" if min(lo, hi) < 0 else f"{f1(lo)}–{f1(hi)}"
 def md(df):
     cols = list(df.columns)
@@ -106,3 +106,34 @@ for r in sd_[sd_.M.round(4).isin([0.0, 0.0025, 0.005, 0.0075])].itertuples():
 t4 = pd.DataFrame(rows, columns=["Restriction on post-installation violations", "Value", "Estimate (%)", "Robust 95% CI for saving (%)", "Includes zero"])
 (T / "t4_honest.md").write_text(md(t4))
 print(md(t4))
+
+# ---- Table 5: best linear projection (change in saving per unit, log points x 100; positive = larger saving)
+blp = pd.concat([pd.read_csv(V / "blp.csv"), pd.read_csv(V / "blp_with_type.csv")])
+models = [("main sample, joint (same-window baseline)", "A"), ("main sample, joint + property type", "B"),
+          ("cohorts 2009-12, joint (early baseline g-4,g-3)", "C"), ("cohorts 2009-12, joint + property type (early baseline)", "D")]
+terms = ["Constant (ATT)", "IMD quintile", "Council tax band", "Floor area band", "Age band", "Baseline ln gas",
+         "Type: detached", "Type: bungalow", "Type: flat", "Type: terraced"]
+tl = {"Constant (ATT)": "Average saving (ATT)", "IMD quintile": "IMD quintile (1 = most deprived)",
+      "Council tax band": "Council tax band (A = 1)", "Floor area band": "Floor area band", "Age band": "Age band",
+      "Baseline ln gas": "Baseline ln gas", "Type: detached": "Detached (vs semi-detached)", "Type: bungalow": "Bungalow",
+      "Type: flat": "Flat", "Type: terraced": "Terraced"}
+rows = []
+for t in terms:
+    row = [tl[t]]
+    for mname, _ in models:
+        r = blp[(blp.model == mname) & (blp.term == t)]
+        if len(r) == 0:
+            row.append(""); continue
+        r = r.iloc[0]
+        star = "*" if r.p < 0.05 else ""
+        row.append(f"{f1(-100 * r.coef)}{star} [{f1(-100 * r.hi)}, {f1(-100 * r.lo)}]")
+    rows.append(row)
+t5 = pd.DataFrame(rows, columns=["Term", "(A) Main sample", "(B) A + property type", "(C) 2009–12, early baseline", "(D) C + property type"])
+(T / "t5_blp.md").write_text(md(t5))
+
+# ---- Table 5b: savings by property type
+st = pd.read_csv(V / "subgroups_type.csv")
+t5b = pd.DataFrame({"Property type": st.group, "Saving (%)": [f1(v) for v in st.pct_saving],
+                    "95% CI": [ci(r.pct_lo, r.pct_hi) for r in st.itertuples()], "Treated homes": [f"{int(n):,}" for n in st.n_treated]})
+(T / "t5b_type.md").write_text(md(t5b))
+print(md(t5)); print(); print(md(t5b))
