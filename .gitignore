@@ -8,3 +8,4 @@ paper/*.out
 paper/*.fls
 paper/*.fdb_latexmk
 outputs/revision/*.npy
+outputs/*.log

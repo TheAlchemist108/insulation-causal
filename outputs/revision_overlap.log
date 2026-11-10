@@ -1,4 +1,0 @@
-                                  spec     att      se  pct_saving  pct_lo   pct_hi  n_treated
-0        R1 clip propensities at 0.001 -0.0922  0.0075      8.8072  7.4538  10.1408       1801
-1            R2 exclude pre-1930 homes -0.0930  0.0078      8.8797  7.4838  10.2545       1670
-2  R3 trim rows with propensity < 0.01 -0.0936  0.0078      8.9323  7.5257  10.3176       1647
